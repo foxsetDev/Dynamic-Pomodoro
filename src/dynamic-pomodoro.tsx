@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Alert, Detail, Icon, List, confirmAlert, environment } from "@raycast/api";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { getAppVersionFromPackage } from "./app-version.ts";
 import {
   buildDiagnosticsChatSummary,
@@ -8,11 +8,6 @@ import {
   type DiagnosticsEvent,
 } from "./diagnostics-report.ts";
 import { getDynamicPomodoroCopy } from "./dynamic-pomodoro-copy.ts";
-import {
-  getStoredDynamicPomodoroLanguage,
-  setStoredDynamicPomodoroLanguage,
-  type DynamicPomodoroLanguage,
-} from "./dynamic-pomodoro-language.ts";
 import { stopCompletionSound } from "./sound-player";
 import { formatLinearProgress } from "./linear-progress";
 import { formatDuration, MAX_MINUTES, type TimerRollingProgress } from "./timer-core";
@@ -63,7 +58,7 @@ function PresetsListView({
   pomodoroStyle,
 }: PresetsListViewProps) {
   return (
-    <List searchBarPlaceholder="Выбрать стиль и минуты">
+    <List searchBarPlaceholder="Choose mode and duration">
       <List.Section title={chooseStyleSectionTitle}>
         <List.Item
           title={chooseStyleFlowTitle}
@@ -72,7 +67,7 @@ function PresetsListView({
           actions={
             <ActionPanel>
               <Action
-                title="Включить Flow"
+                title="Enable Flow"
                 icon={Icon.Bolt}
                 onAction={canChangeStyle ? () => onChangePomodoroStyle("flow") : undefined}
               />
@@ -86,7 +81,7 @@ function PresetsListView({
           actions={
             <ActionPanel>
               <Action
-                title="Включить Classic"
+                title="Enable Classic"
                 icon={Icon.Clock}
                 onAction={canChangeStyle ? () => onChangePomodoroStyle("classic") : undefined}
               />
@@ -186,27 +181,11 @@ export default function Command() {
     progressMetrics,
     styleChoiceSeen,
   } = useTimerController();
-  const [dynamicPomodoroLanguage, setDynamicPomodoroLanguage] = useState<DynamicPomodoroLanguage>("en");
+  const dynamicPomodoroCopy = getDynamicPomodoroCopy();
 
   useEffect(() => {
     void stopCompletionSound();
   }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const loadDynamicPomodoroLanguage = async () => {
-      const language = await getStoredDynamicPomodoroLanguage();
-      if (!cancelled && language) {
-        setDynamicPomodoroLanguage(language);
-      }
-    };
-    void loadDynamicPomodoroLanguage();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const dynamicPomodoroCopy = useMemo(() => getDynamicPomodoroCopy(dynamicPomodoroLanguage), [dynamicPomodoroLanguage]);
 
   const now = Date.now();
   const timeline: DiagnosticsEvent[] = diagnosticsTimeline.map((event) => ({
@@ -240,10 +219,10 @@ export default function Command() {
           typeof watchdogDiagnostics.lastSoundAttemptAt === "number" && now - watchdogDiagnostics.lastSoundAttemptAt < 10_000,
       },
       reproductionTemplate: {
-        steps: "Что делал: ...",
-        expected: "Что ожидал: ...",
-        actual: "Что произошло: ...",
-        frequency: "Как часто воспроизводится: ...",
+        steps: "Steps: ...",
+        expected: "Expected: ...",
+        actual: "Actual: ...",
+        frequency: "Frequency: ...",
       },
     },
     { privacyMode: "safe", includeTimeline: true },
@@ -252,22 +231,17 @@ export default function Command() {
   const diagnosticsIssueTemplate = buildDiagnosticsIssueTemplate(diagnosticsPayload);
   const diagnosticsJsonSafe = JSON.stringify(diagnosticsPayload, null, 2);
   const selectedPresetMinutes = availableActions.selectedPreset ?? state.minutes;
-  const isRussian = dynamicPomodoroLanguage === "ru";
   const currentStyleName = availableActions.pomodoroStyle === "flow" ? "Flow" : "Classic";
   const breakReadyPrimaryTitle = availableActions.completionPrimaryAction === "extend-5"
     ? dynamicPomodoroCopy.breakReadyExtend5
-    : isRussian
-      ? `Продолжить ${selectedPresetMinutes} мин`
-      : `Continue ${selectedPresetMinutes} Min`;
+    : `Continue ${selectedPresetMinutes} Min`;
   const completionRatePercent = Math.round(rollingStats24h.completionRate24h * 100);
   const totalMs = Math.max(1, state.minutes * 60_000);
   const elapsedMs = Math.max(0, totalMs - Math.max(0, remainingMs));
   const timerProgressText = formatLinearProgress(elapsedMs / totalMs, 16);
   const statsLastStartText = toRelativeTime(rollingStats24h.lastStartAt, now);
   const statsLastCompletionText = toRelativeTime(rollingStats24h.lastCompletionAt, now);
-  const statsSummaryText = isRussian
-    ? `Фокус: ${formatDuration(rollingStats24h.focusTimeMs24h)} • Доля завершений: ${completionRatePercent}%`
-    : `Focus: ${formatDuration(rollingStats24h.focusTimeMs24h)} • Rate: ${completionRatePercent}%`;
+  const statsSummaryText = `Focus: ${formatDuration(rollingStats24h.focusTimeMs24h)} • Rate: ${completionRatePercent}%`;
   const statsViewerMarkdown = [
     "## Pomodoro Statistics (24h)",
     `- Pomodoros: **${rollingStats24h.starts24h}**`,
@@ -278,11 +252,6 @@ export default function Command() {
     `Last start: ${statsLastStartText}`,
     `Last completion: ${statsLastCompletionText}`,
   ].join("\n");
-  const handleDynamicPomodoroLanguageChange = (language: DynamicPomodoroLanguage) => {
-    setDynamicPomodoroLanguage(language);
-    void setStoredDynamicPomodoroLanguage(language);
-  };
-
   return (
     <List isLoading={!isReady} searchBarPlaceholder="Search timer controls">
       {!isReady ? (
@@ -419,7 +388,7 @@ export default function Command() {
         />
         <List.Item
           title={dynamicPomodoroCopy.pomodoroStyleTitle}
-          subtitle={`${isRussian ? "Текущий режим" : "Current mode"}: ${currentStyleName} • ${selectedPresetMinutes} ${isRussian ? "мин" : "min"}`}
+          subtitle={`Current mode: ${currentStyleName} • ${selectedPresetMinutes} min`}
           icon={availableActions.pomodoroStyle === "flow" ? Icon.Bolt : Icon.Clock}
           actions={
             <ActionPanel>
@@ -489,16 +458,6 @@ export default function Command() {
                 icon={Icon.Play}
                 onAction={availableActions.canQuickStart ? () => handleQuickStartPreset(40) : undefined}
               />
-              <Action
-                title={dynamicPomodoroCopy.useEnglish}
-                icon={dynamicPomodoroLanguage === "en" ? Icon.CheckCircle : Icon.Globe}
-                onAction={() => handleDynamicPomodoroLanguageChange("en")}
-              />
-              <Action
-                title={dynamicPomodoroCopy.useRussian}
-                icon={dynamicPomodoroLanguage === "ru" ? Icon.CheckCircle : Icon.Globe}
-                onAction={() => handleDynamicPomodoroLanguageChange("ru")}
-              />
             </ActionPanel>
           }
         />
@@ -515,18 +474,18 @@ export default function Command() {
                 target={<ProgressMetricsView copy={dynamicPomodoroCopy} metrics={progressMetrics} />}
               />
               <Action
-                title="Обнулить статистику"
+                title="Clear Stats"
                 icon={Icon.Trash}
                 onAction={async () => {
                   const confirmed = await confirmAlert({
-                    title: "Обнулить статистику?",
-                    message: "Будут удалены старты и завершения за историю в приложении.",
+                    title: "Clear statistics?",
+                    message: "This removes all recorded starts and completions.",
                     primaryAction: {
-                      title: "Обнулить",
+                      title: "Clear",
                       style: Alert.ActionStyle.Destructive,
                     },
                     dismissAction: {
-                      title: "Отмена",
+                      title: "Cancel",
                       style: Alert.ActionStyle.Cancel,
                     },
                   });

@@ -7,7 +7,7 @@ export type SystemCompletionSound = {
 export const SYSTEM_COMPLETION_SOUNDS: SystemCompletionSound[] = [
   {
     id: "unfold-encore-infinitum",
-    title: "Раскрытие (Unfold)",
+    title: "Unfold",
     path: "/System/Library/PrivateFrameworks/ToneLibrary.framework/Versions/A/Resources/Ringtones/Unfold-EncoreInfinitum.m4r",
   },
   { id: "hero", title: "Hero", path: "/System/Library/Sounds/Hero.aiff" },

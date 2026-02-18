@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0
+## [Initial Version] - {PR_MERGE_DATE}
 
 - Initial public release of Dynamic Pomodoro for Raycast.
 - Added adaptive focus timer flow (start/pause/reset/quick start).

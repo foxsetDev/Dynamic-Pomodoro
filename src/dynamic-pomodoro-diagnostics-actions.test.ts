@@ -34,7 +34,7 @@ test("Dynamic Pomodoro shows statistics in a single compact container", () => {
   assert.match(source, /subtitle=\{statsSummaryText\}/);
   assert.match(
     source,
-    /Фокус: \$\{formatDuration\(rollingStats24h\.focusTimeMs24h\)\} • Доля завершений: \$\{completionRatePercent\}%/,
+    /Focus: \$\{formatDuration\(rollingStats24h\.focusTimeMs24h\)\} • Rate: \$\{completionRatePercent\}%/,
   );
   assert.doesNotMatch(source, /const statsSummaryText = `Pomodoros:/);
   assert.doesNotMatch(source, /const statsSummaryText = `Completed:/);
@@ -54,8 +54,8 @@ test("Dynamic Pomodoro opens statistics in Raycast viewer", () => {
   assert.match(source, /<Detail markdown=\{statsViewerMarkdown\} \/>/);
   assert.match(source, /title=\{dynamicPomodoroCopy\.openProgress\}/);
   assert.match(source, /<ProgressMetricsView copy=\{dynamicPomodoroCopy\} metrics=\{progressMetrics\} \/>/);
-  assert.match(source, /title="Обнулить статистику"/);
-  assert.match(source, /title: "Обнулить статистику\?"/);
+  assert.match(source, /title="Clear Stats"/);
+  assert.match(source, /title: "Clear statistics\?"/);
   assert.match(source, /handleClearStats\(\)/);
 });
 

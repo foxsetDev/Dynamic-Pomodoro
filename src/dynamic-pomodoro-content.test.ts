@@ -29,12 +29,15 @@ test("Dynamic Pomodoro includes Dynamic Pomodoro quick-start actions", () => {
   assert.match(source, /handleQuickStartPreset\(40\)/);
 });
 
-test("Dynamic Pomodoro includes Dynamic Pomodoro language switch actions", () => {
+test("Dynamic Pomodoro does not include language switch actions", () => {
   const filePath = resolve(import.meta.dirname, "dynamic-pomodoro.tsx");
   const source = readFileSync(filePath, "utf8");
 
-  assert.match(source, /handleDynamicPomodoroLanguageChange\("en"\)/);
-  assert.match(source, /handleDynamicPomodoroLanguageChange\("ru"\)/);
+  assert.doesNotMatch(source, /handleDynamicPomodoroLanguageChange/);
+  assert.doesNotMatch(source, /dynamicPomodoroLanguage/);
+  assert.doesNotMatch(source, /useRussian/);
+  assert.doesNotMatch(source, /useEnglish/);
+  assert.doesNotMatch(source, /\p{Script=Cyrillic}/u);
 });
 
 test("Dynamic Pomodoro opens Dynamic Pomodoro text in Raycast viewer", () => {

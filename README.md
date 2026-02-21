@@ -1,3 +1,7 @@
+
+<img width="512" height="512" alt="icon" src="https://github.com/user-attachments/assets/d4eaef70-ca0b-40be-8db6-3027593aef43" />
+
+
 # Dynamic Pomodoro for Raycast
 
 Adaptive countdown timer with minute controls and max 60 minutes.

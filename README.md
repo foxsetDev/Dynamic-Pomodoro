@@ -17,6 +17,8 @@ How to Use (3 Steps)
 3. If focus is stable, grow gradually to 8, 10, 15+ minutes.
 Rule: adjust minutes to real concentration, not an ideal schedule.
 
+![demo-v1-Social](https://github.com/user-attachments/assets/9e2514b1-baeb-4809-8472-3712724acaee)
+
 ## Run locally
 
 1. Install dependencies:
